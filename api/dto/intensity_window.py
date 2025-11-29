@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime, timezone
+import sqlite3
 
 class IntensityWindow:
     def __init__(self, time: datetime, forecast: int, actual: int, index: str):
@@ -19,10 +20,10 @@ class IntensityWindow:
         return datetime.fromisoformat(ts)
 
     def is_future_forecast(self):
-        return self.time > datetime.now()
+        return self.time > datetime.now(timezone.utc)
 
     @staticmethod
-    def from_dict(data: dict):
+    def from_json_dict(data: dict):
         time: datetime = IntensityWindow._iso8601_to_datetime(
             data['from'])
 
@@ -31,4 +32,12 @@ class IntensityWindow:
         actual: int = intensity_data['actual']
         index: str = intensity_data['index']
 
+        return IntensityWindow(time, forecast, actual, index)
+
+    @staticmethod
+    def from_db_row(row: sqlite3.Row) -> "IntensityWindow":
+        time = datetime.fromisoformat(row["forecast_time"])
+        forecast = row["forecast_value"]
+        actual = row["actual_value"]
+        index = row["index_value"]
         return IntensityWindow(time, forecast, actual, index)

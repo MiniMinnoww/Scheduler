@@ -1,7 +1,7 @@
 import requests
 from datetime import datetime, timedelta, timezone
-from intensity_window import IntensityWindow
-
+from dto.intensity_window import IntensityWindow
+from db import db
 
 class CarbonIntensity:
     """
@@ -59,12 +59,58 @@ class CarbonIntensity:
         data = r.json()
         return data['data'][0]
 
+    @staticmethod
+    def update_db_missing_future_forecasts() -> None:
+        """
+        Fetch and store any missing half-hour forecasts between now and 2 days' time.
+        """ 
+        existing_forecasts: List[datetime] = db.get_future_forecasts()
+        # Normalise times to UTC and strip seconds/micros in case
+        existing_times = {
+            w.time.astimezone(timezone.utc).replace(second=0, microsecond=0)
+            for w in existing_windows
+        }
+
+        now = datetime.now(timezone.utc)
+        end = now + timedelta(days=2)
+
+        # Truncate start time to half-hour boundary
+        if now.minute < 30:
+            start = now.replace(minute=0, second=0, microsecond=0)
+        else:
+            start = now.replace(minute=30, second=0, microsecond=0)
+
+        # Walk every half-hour in this window, check which are missing
+        new_windows: list[IntensityWindow] = []
+        current = start
+        
+        while current <= end:
+            if current not in existing_times:
+                # Which settlement period (1–48) for this datetime?
+                settlement = CarbonIntensity.half_hour_index(current)
+
+                # Fetch from API for that date/period
+                data = self.get_data_for_half_hour(current, settlement)
+
+                # Convert from API dict to DTO objects
+                window = IntensityWindow.from_dict(data)
+                new_windows.append(window)
+
+            current += timedelta(minutes=30)
+
+        # Add missing forecasts to the db
+        if new_windows:
+            db.add_forecasts(new_windows)
+
 
 if __name__ == "__main__":
     ci = CarbonIntensity()
     dt: str = datetime.strptime("2025-11-30", "%Y-%m-%d")
-    # half_hour_settlement = CarbonIntensity.half_hour_index(dt)
-    for i in range(1, 48):
-        dat = ci.get_data_for_half_hour(dt, i)
-        dto = IntensityWindow.from_dict(dat)
-        print(dto)
+    #for i in range(1, 48):
+        #dat = ci.get_data_for_half_hour(dt, i)
+        #dto = IntensityWindow.from_json_dict(dat)
+        #print(dto)
+    print(db.get_future_forecasts())
+    ci.update_db_missing_future_forecasts()
+    print(db.get_future_forecasts())
+

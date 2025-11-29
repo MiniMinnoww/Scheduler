@@ -1,7 +1,7 @@
 import sqlite3
 from contextlib import contextmanager
 import os
-from api.carbonintensityapi.intensity_window import IntensityWindow
+from api.dto.intensity_window import IntensityWindow
 from api.domain.wash_booking import WashBooking
 
 
@@ -120,7 +120,7 @@ def add_forecasts(forecasts: list[IntensityWindow]):
 def get_future_forecasts():
     with get_connection() as (_, cursor):
         records = cursor.execute(f"SELECT * FROM forecasts")
-        forecasts = [IntensityWindow.from_dict(dict(record)) for record in records]
+        forecasts = [IntensityWindow.from_db_row(record) for record in records]
         return [forecast for forecast in forecasts if forecast.is_future_forecast()]
 
 
