@@ -12,7 +12,7 @@ class CarbonIntensity:
     def __init__(self):
         self.__HEADERS: dict = {'Accept': 'application/json'}
 
-    def getIntensityDataForHalfHour(self, date: str, half_hour_settlement: int) -> dict:
+    def get_data_for_half_hour(self, date: str, half_hour_settlement: int) -> dict:
         """
         Get Carbon Intensity data for a specific half hour period of a certain date.
         :param date: Date in YYYY-MM-DD format.
@@ -37,10 +37,12 @@ class CarbonIntensity:
             params={},
             headers=self.__HEADERS
         )
-        return r.json()
+
+        data = r.json()
+        return data['data'][0]
 
 
 if __name__ == "__main__":
     ci = CarbonIntensity()
-    test = ci.getIntensityDataForHalfHour("2025-11-29", 1)
+    test = ci.get_data_for_half_hour("2025-11-29", 1)
     print(test)
