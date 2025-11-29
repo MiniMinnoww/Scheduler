@@ -1,8 +1,8 @@
 import sqlite3
 from contextlib import contextmanager
 import os
-from api.dto.intensity_window import IntensityWindow
-from api.domain.wash_booking import WashBooking
+from dto.intensity_window import IntensityWindow
+from domain.wash_booking import WashBooking
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

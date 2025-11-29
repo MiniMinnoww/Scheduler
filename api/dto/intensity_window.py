@@ -23,7 +23,7 @@ class IntensityWindow:
         return self.time > datetime.now(timezone.utc)
 
     @staticmethod
-    def from_json_dict(data: dict):
+    def from_dict(data: dict):
         time: datetime = IntensityWindow._iso8601_to_datetime(
             data['from'])
 

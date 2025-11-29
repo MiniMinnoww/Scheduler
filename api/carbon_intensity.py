@@ -59,16 +59,15 @@ class CarbonIntensity:
         data = r.json()
         return data['data'][0]
 
-    @staticmethod
-    def update_db_missing_future_forecasts() -> None:
+    def update_db_missing_future_forecasts(self) -> None:
         """
         Fetch and store any missing half-hour forecasts between now and 2 days' time.
         """ 
-        existing_forecasts: List[datetime] = db.get_future_forecasts()
+        existing_forecasts: List[IntensityWindow] = db.get_future_forecasts()
         # Normalise times to UTC and strip seconds/micros in case
         existing_times = {
             w.time.astimezone(timezone.utc).replace(second=0, microsecond=0)
-            for w in existing_windows
+            for w in existing_forecasts
         }
 
         now = datetime.now(timezone.utc)
