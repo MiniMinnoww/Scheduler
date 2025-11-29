@@ -7,9 +7,23 @@ class CarbonIntensity:
         self.HEADERS = {'Accept': 'application/json'}
 
     @staticmethod
+    def _minutes_to_iso8601_timestamp(minutes_from_now: float) -> str:
+        """
+        Add specified minutes to the current time and concert to ISO8601 format.
+        :param minutes_from_now: Number of minutes to add to current time
+        :return: ISO8601 formatted timestamp string
+        """
+        from datetime import datetime, timedelta, timezone
+
+        target = datetime.now(timezone.utc) + timedelta(minutes=minutes_from_now)
+        return target.strftime("%Y-%m-%dT%H:%MZ")
+
+    @staticmethod
     def _hours_to_iso8601_timestamp(hours: float) -> str:
         """
-        Convert current time plus 24 hours to ISO8601 format.
+        Add specified minutes to the current time and concert to ISO8601 format.
+        :param hours: Number of hours to add to current time
+        :return: ISO8601 formatted timestamp string
         """
         # Add hours to current time UTC
         now = datetime.now(timezone.utc)
@@ -23,6 +37,7 @@ class CarbonIntensity:
     def getDataToday(self) -> dict:
         """
         Get Carbon Intensity data for today as JSON.
+        :return: JSON data for today's Carbon Intensity.
         """
         r = requests.get(
             'https://api.carbonintensity.org.uk/intensity',
@@ -36,6 +51,7 @@ class CarbonIntensity:
         Get Carbon Intensity statistics until a certain number of hours from now.
         :param hours_duration: Number of hours from now to get statistics until.
         :param hours_start: Number of hours from now to start getting statistics.
+        :return: JSON data for Carbon Intensity statistics.
         """
         start_time = CarbonIntensity._hours_to_iso8601_timestamp(hours_start)
         end_time = CarbonIntensity._hours_to_iso8601_timestamp(hours_duration)
