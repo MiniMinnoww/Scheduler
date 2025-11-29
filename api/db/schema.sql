@@ -1,3 +1,8 @@
+DELETE FROM users;
+DELETE FROM forecasts;
+DELETE FROM bookings;
+
+
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE
@@ -9,6 +14,14 @@ CREATE TABLE IF NOT EXISTS bookings (
     duration REAL NOT NULL,
     start_time TEXT NOT NULL,
     dry_included BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE IF NOT EXISTS forecasts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    forecast_time TEXT NOT NULL,
+    forecast_value INTEGER NOT NULL,
+    actual_value INTEGER NOT NULL,
+    index_value TEXT NOT NULL
 );
 
 INSERT INTO users (username) VALUES

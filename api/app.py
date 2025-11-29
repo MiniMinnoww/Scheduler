@@ -1,7 +1,7 @@
 import time
 from flask import Flask, request, jsonify
 from domain.wash_booking import WashBooking
-from db.db import get_all_future_bookings, get_usernames, create_booking
+from db.db import get_all_future_bookings, get_usernames, create_booking, has_future_booking
 from utlis import *
 app = Flask(__name__)
 
@@ -14,15 +14,17 @@ def get_future_bookings():
     bookings = get_all_future_bookings()
     return {"bookings": [booking.to_json() for booking in bookings]}
 
-@app.route("api/get-user-booking/")
+@app.route("/api/get-user-booking/")
 def get_booking_for_user():
     username = request.args.get("username", "")
     if error_dict := validate_username(username):
         return jsonify(error_dict), 400
+    try:
+        return get_booking_for_user(username).to_json()
+    except ValueError as e:
+        return jsonify({"error": e}), 400
 
-    return get_booking_for_user(username).to_json()
-
-@app.route("api/save-booking")
+@app.route("/api/save-booking")
 def save_booking():
     booking_info = request.get_json()
     try:
@@ -41,13 +43,24 @@ def save_booking():
 
     create_booking(booking)
 
-@app.route("api/send_available_times")
+@app.route("/api/send_available_times")
 def format_available_times():
     username = request.args.get("username", "")
     if error_dict:=validate_username(username):
         return jsonify(error_dict), 400
     # send the info to logan i guess after i format the times?
     return {}
+
+@app.route("/api/user-has-future-booking")
+def user_has_future_booking():
+    username = request.args.get("username", "")
+    if error_dict:= validate_username(username):
+        return jsonify(error_dict), 400
+
+    try:
+        return {"result":has_future_booking(username)}
+    except ValueError as e:
+        return jsonify({"error":e}), 400
 
 if __name__ == "__main__":
     app.run()

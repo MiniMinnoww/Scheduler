@@ -17,7 +17,9 @@ class IntensityWindow:
         # Can't parse 'Z' so convert to '+00:00'
         ts = ts.replace("Z", "+00:00")
         return datetime.fromisoformat(ts)
-    
+
+    def is_future_forecast(self):
+        return self.time > datetime.now()
 
     def from_json(json: str):
         time: datetime = IntensityWindow._iso8601_to_datetime(

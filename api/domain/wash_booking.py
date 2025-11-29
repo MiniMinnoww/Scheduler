@@ -10,10 +10,12 @@ class WashBooking:
         self.duration = duration
         self.dryIncluded = dry_included
 
+
     def get_end_time(self):
-        return self.start_datetime + timedelta(hours=self.duration)
+        return self.start_datetime + timedelta(hours=self.get_total_duration())
 
     def get_total_duration(self):
+        # assumption that the drying takes the same time as the washing
         if self.dryIncluded:
             return self.duration * 2
 
@@ -81,5 +83,18 @@ class WashBooking:
             raise ValueError(f"Invalid field type or format: {e}")
 
 
+    def get_occupied_timeslots(self):
+        # gets a list of 3 min timeslots it occupies
+        timeslots = []
+        current = self.start_datetime
+        delta = timedelta(minutes=30)
 
+        while current < self.get_end_time():
+            timeslots.append(current)
+            current += delta
 
+        return timeslots
+
+if __name__ == "__main__":
+    booking = WashBooking(1, "alice", 1, datetime.now().isoformat(), True)
+    print(booking.get_occupied_timeslots())

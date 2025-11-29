@@ -1,38 +1,33 @@
-# date string has the format ("YYYY-MM-DD HH:MM:SS) using:
-# datetime.strptime("2025-11-29 15:30:00", "%Y-%m-%d %H:%M:%S")
-# formatted = dt.strftime("%Y-%m-%d %H:%M:%S") for the other way round
-
 import os
 import sqlite3
 from contextlib import contextmanager
 from datetime import datetime, timedelta
 
+from api.carbonintensityapi.intensity_window import IntensityWindow
 from api.domain.wash_booking import WashBooking
 
 
 def get_connection_or_create_db() -> sqlite3.Connection:
-    if not os.path.exists("db"):
-        os.mkdir("db")
-
     connection = sqlite3.connect("washing_times.db")
     cursor = connection.cursor()
 
     res1 = cursor.execute(
-        f"SELECT name "
-        f"FROM sqlite_master "
-        f"WHERE type='table' AND name='bookings'"
-    )
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='bookings'"
+    ).fetchone()
 
     res2 = cursor.execute(
-        f"SELECT name "
-        f"FROM sqlite_master "
-        f"WHERE type='table' AND name='users'"
-    )
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='users'"
+    ).fetchone()
 
-    if res1.fetchone() is None or res2.fetchone() is None:
+    res3 = cursor.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='forecasts'"
+    ).fetchone()
+
+    if res1 is None or res2 is None or res3 is None:
         with open("schema.sql", "r", encoding="utf-8") as f:
             schema = f.read()
             cursor.executescript(schema)
+        connection.commit()
 
         connection.commit()
 
@@ -51,23 +46,35 @@ def get_connection():
             connection.close()
 
 def get_booking_from_username(username : str):
+    if username not in get_usernames():
+        raise ValueError(f"User ({username}) does not exist!")
     with get_connection() as (_, cursor):
         booking_record = cursor.execute(
             "SELECT * FROM bookings WHERE username = ?",
             (username,)
         ).fetchone()
 
-        return WashBooking(*booking_record)
+    if booking_record is None:
+        return None
 
+    return WashBooking(*booking_record)
 
-def create_booking(booking : WashBooking):
+def create_booking(booking: WashBooking):
     with get_connection() as (_, cursor):
-        query = f"""
+        query = """
         INSERT INTO bookings (username, duration, start_time, dry_included)
-        VALUES ('{booking.username}', {booking.duration}, 
-        '{booking.start_datetime.isoformat()}', {booking.dryIncluded});
+        VALUES (?, ?, ?, ?);
         """
-        cursor.execute(query)
+        cursor.execute(
+            query,
+            (
+                booking.username,
+                booking.duration,
+                booking.start_datetime.isoformat(),
+                booking.dryIncluded,
+            )
+        )
+
 
 def get_all_future_bookings():
     with get_connection() as (_, cursor):
@@ -80,5 +87,43 @@ def get_usernames():
         records = cursor.execute(f"SELECT username FROM users")
         return [row[0] for row in records]
 
+def has_future_booking(username: str):
+    with get_connection() as (_, cursor):
+        booking = get_booking_from_username(username)
+
+        if booking is None:
+            return False
+
+        if booking.is_future_booking():
+            return True
+
+        return False
+
+def add_forecasts(forecasts: list[IntensityWindow]):
+    with get_connection() as (_, cursor):
+        query = """
+            INSERT INTO forecasts (forecast_time, forecast_value, actual_value, index_value)
+            VALUES (?, ?, ?, ?);
+        """
+        for forecast in forecasts:
+            cursor.execute(
+                query,
+                (
+                    forecast.time.isoformat(),
+                    forecast.forecast,
+                    forecast.actual,
+                    forecast.index,
+                )
+            )
+
+
+def get_future_forecasts():
+    with get_connection() as (_, cursor):
+        records = cursor.execute(f"SELECT * FROM forecasts")
+        forecasts = [IntensityWindow(*record) for record in records]
+        return [forecast for forecast in forecasts if forecast.is_future_forecast()]
+
+
+
 if __name__ == "__main__":
-    print(get_usernames())
+    get_booking_from_username("charlie")
