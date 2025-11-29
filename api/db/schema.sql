@@ -12,8 +12,7 @@ CREATE TABLE IF NOT EXISTS bookings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL,
     duration REAL NOT NULL,
-    start_time TEXT NOT NULL,
-    dry_included BOOLEAN DEFAULT TRUE
+    start_time TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS forecasts (

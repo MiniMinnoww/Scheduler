@@ -3,23 +3,16 @@ import json
 # duration is in hours, can be fractional
 
 class WashBooking:
-    def __init__(self, id: int, username: str, duration: float, start_time_str: str, dry_included: bool):
+    def __init__(self, id: int, username: str, duration: float, start_time_str: str):
         self.id = id
         self.username = username
         self.start_datetime = datetime.fromisoformat(start_time_str)
         self.duration = duration
-        self.dryIncluded = dry_included
 
 
     def get_end_time(self):
-        return self.start_datetime + timedelta(hours=self.get_total_duration())
+        return self.start_datetime + timedelta(hours=self.duration)
 
-    def get_total_duration(self):
-        # assumption that the drying takes the same time as the washing
-        if self.dryIncluded:
-            return self.duration * 2
-
-        return self.duration
 
     def is_future_booking(self):
         return self.start_datetime > datetime.now()
@@ -29,8 +22,7 @@ class WashBooking:
             f"WashBooking(id={self.id}, "
             f"username='{self.username}', "
             f"start_time_str={self.start_datetime.isoformat()}, "
-            f"duration={self.duration}, "
-            f"dryIncluded={self.dryIncluded})"
+            f"duration={self.duration}"
         )
 
     def __repr__(self):
@@ -38,17 +30,15 @@ class WashBooking:
             f"WashBooking(id={self.id!r}, "
             f"username={self.username!r}, "
             f"start_time_str={self.start_datetime!r}, "
-            f"duration={self.duration!r}, "
-            f"dryIncluded={self.dryIncluded!r})"
+            f"duration={self.duration!r}"
         )
 
     def to_dict(self):
         return {
             "id": self.id,
             "username": self.username,
-            "start_time_str": self.start_datetime.isoformat(),  # convert datetime to string
+            "startTimeStr": self.start_datetime.isoformat(),  # convert datetime to string
             "duration": self.duration,
-            "dryIncluded": self.dryIncluded
         }
 
     def to_json(self):
@@ -60,8 +50,7 @@ class WashBooking:
             id=None,
             username=data["username"],
             duration=data["duration"],
-            start_time_str=data["start_time_str"],
-            dry_included=data["dryIncluded"]
+            start_time_str=data["startTimeStr"]
         )
 
     @classmethod
@@ -72,8 +61,7 @@ class WashBooking:
                 id=int(data["id"]),
                 username=str(data["username"]),
                 duration=float(data["duration"]),
-                start_time_str=data["start_time_str"],
-                dry_included=bool(data["dryIncluded"])
+                start_time_str=data["startTimeStr"]
             )
         except json.JSONDecodeError as e:
             raise ValueError(f"Invalid JSON: {e}")
@@ -96,5 +84,5 @@ class WashBooking:
         return timeslots
 
 if __name__ == "__main__":
-    booking = WashBooking(1, "alice", 1, datetime.now().isoformat(), True)
+    booking = WashBooking(1, "alice", 1, datetime.now().isoformat())
     print(booking.get_occupied_timeslots())
