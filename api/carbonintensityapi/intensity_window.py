@@ -21,8 +21,6 @@ class IntensityWindow:
     def is_future_forecast(self):
         return self.time > datetime.now()
 
-    def from_json(json: str):
-
     @staticmethod
     def from_dict(data: dict):
         time: datetime = IntensityWindow._iso8601_to_datetime(
