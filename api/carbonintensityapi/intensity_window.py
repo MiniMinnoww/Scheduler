@@ -22,10 +22,13 @@ class IntensityWindow:
         return self.time > datetime.now()
 
     def from_json(json: str):
-        time: datetime = IntensityWindow._iso8601_to_datetime(
-            json['from'])
 
-        intensity_data: dict = json['intensity']
+    @staticmethod
+    def from_dict(data: dict):
+        time: datetime = IntensityWindow._iso8601_to_datetime(
+            data['from'])
+
+        intensity_data: dict = data['intensity']
         forecast: int = intensity_data['forecast']
         actual: int = intensity_data['actual']
         index: str = intensity_data['index']
