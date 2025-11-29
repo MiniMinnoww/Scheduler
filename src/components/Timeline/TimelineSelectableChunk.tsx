@@ -1,27 +1,33 @@
-import {type Dispatch, type SetStateAction} from "react";
 
 interface TimelineSelectableChunkProps {
   mouseDown: boolean;
   selected: boolean;
-  setSelected: Dispatch<SetStateAction<boolean>>;
+  setSelected: (a: boolean) => void;
+  readonly: boolean;
 }
 
-const TimelineSelectableChunk = ({ mouseDown, selected, setSelected }: TimelineSelectableChunkProps) => {
+const TimelineSelectableChunk = ({ mouseDown, selected, setSelected, readonly }: TimelineSelectableChunkProps) => {
   const toggle = () => setSelected(!selected);
+
+  const onclick = () => {
+    if (!readonly) toggle()
+  }
+
+  const onMouseEnter = () => {
+    if (mouseDown && !readonly) toggle();
+  }
+
+  const onMouseDown = () => {
+    if (!readonly) toggle()
+  }
 
   return (
     <div
       className={selected ? "selectable-chunk active" : "selectable-chunk inactive"}
-      onClick={toggle}
-      onMouseEnter={() => {
-        if (mouseDown) toggle();
-      }}
-      onMouseDown={() => {
-        toggle()
-      }}
-      onClickCapture={() => {
-        toggle()
-      }}
+      onClick={onclick}
+      onMouseEnter={onMouseEnter}
+      onMouseDown={onMouseDown}
+      onClickCapture={onclick}
     />
   );
 };

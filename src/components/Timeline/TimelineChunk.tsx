@@ -1,6 +1,6 @@
 import "../../util/Extensions"
 import TimelineSelectableChunk from "./TimelineSelectableChunk.tsx";
-import {forwardRef, useImperativeHandle, useState} from "react";
+import {forwardRef, useImperativeHandle} from "react";
 
 interface MouseData {
   isMouseDown: boolean
@@ -14,15 +14,17 @@ export interface TimelineChunkHandle {
 interface TimelineChunkProps {
   time: Date
   mouseData: MouseData
+  readonly: boolean
+  selected: boolean
+  setSelected: (b: boolean) => void;
 }
 
-const TimelineChunk = forwardRef<TimelineChunkHandle, TimelineChunkProps>(({time, mouseData}, ref) => {
-  const [selected, setSelected] = useState(false)
+const TimelineChunk = forwardRef<TimelineChunkHandle, TimelineChunkProps>(({time, mouseData, readonly, selected, setSelected}, ref) => {
 
   useImperativeHandle(ref, () => ({
-      isSelected: () => selected,
-      getDate: () => time
-    }));
+    isSelected: () => selected,
+    getDate: () => time
+  }));
 
   return (
     <div className="timeline-chunk bg-dark">
@@ -30,10 +32,15 @@ const TimelineChunk = forwardRef<TimelineChunkHandle, TimelineChunkProps>(({time
         {time.formatHoursMinutes()}
       </div>
 
-      <TimelineSelectableChunk mouseDown={mouseData.isMouseDown} selected={selected} setSelected={setSelected}/>
+      <TimelineSelectableChunk
+        mouseDown={mouseData.isMouseDown}
+        selected={selected}
+        setSelected={v => { setSelected(v); }}
+        readonly={readonly}
+      />
     </div>
-
   )
 })
+
 
 export default TimelineChunk

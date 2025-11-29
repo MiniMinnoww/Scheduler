@@ -32,12 +32,15 @@
     transform: scaleX(1.1);
 }
 
-.selectable-chunk.active:hover {
-    background-color: var(--bs-primary);
+.selectable-chunk:hover {
+    background-color: var(--bs-secondary);
     transform: scale(1.1);
 }
 
-.selectable-chunk.inactive:hover {
-    background-color: var(--bs-secondary);
-    transform: scale(1.1);
+.selectable-chunk.active:active:hover {
+    transform: scale(1.2);
+}
+
+.selectable-chunk.inactive:active:hover {
+    transform: scale(0.8);
 }
