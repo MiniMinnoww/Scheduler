@@ -1,9 +1,8 @@
-
 import numpy as np
-from api.carbonintensityapi.intensity_window import IntensityWindow
-from api.db.db import get_all_future_bookings
+from dto.intensity_window import IntensityWindow
+from db.db import get_all_future_bookings
 from datetime import datetime, timedelta
-from api.domain.wash_booking import WashBooking
+from domain.wash_booking import WashBooking
 
 
 def get_booked_timeslots() -> list[datetime]:
@@ -29,7 +28,7 @@ def get_best_booking(booking_request: dict) -> WashBooking | None:
     start_time = find_least_intense_slot(valid_windows, duration)
     if start_time is None:
         return None
-    return WashBooking(None, booking_request["username"], duration, start_time.isoformat())
+    return WashBooking(None, booking_request["username"], duration, start_time)
 
 
 def find_least_intense_slot(intensity_windows: [IntensityWindow], duration: float) -> datetime | None:

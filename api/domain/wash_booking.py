@@ -3,7 +3,7 @@ import json
 # duration is in hours, can be fractional
 
 class WashBooking:
-    def __init__(self, id: int, username: str, duration: float, start_datetime: datetime):
+    def __init__(self, id: int | None, username: str, duration: float, start_datetime: datetime):
         self.id = id
         self.username = username
         self.start_datetime = start_datetime
@@ -35,7 +35,6 @@ class WashBooking:
 
     def to_dict(self):
         return {
-            "id": self.id,
             "username": self.username,
             "startTimeStr": self.start_datetime.isoformat(),  # convert datetime to string
             "duration": self.duration,
@@ -46,18 +45,21 @@ class WashBooking:
 
     @staticmethod
     def from_dict(data: dict):
-        return WashBooking(id=None, username=data["username"], duration=data["duration"], start_time=datetime.fromisoformat(data["StartTimeStr"]))
+        return WashBooking(id=None,
+                           username=data["username"],
+                           duration=data["duration"],
+                           start_datetime=datetime.fromisoformat(data["startTimeStr"]))
 
     @staticmethod
     def from_json(json_str: str):
         try:
             data = json.loads(json_str)
             return WashBooking(
-                id=int(data["id"]),
+                id=None,
                 username=str(data["username"]),
                 duration=float(data["duration"]),
-                start_time_str=data["startTimeStr"]
-            )
+                start_datetime=datetime.fromisoformat(data["startTimeStr"]))
+
         except json.JSONDecodeError as e:
             raise ValueError(f"Invalid JSON: {e}")
         except KeyError as e:
@@ -79,5 +81,5 @@ class WashBooking:
         return timeslots
 
 if __name__ == "__main__":
-    booking = WashBooking(1, "alice", 1, datetime.now().isoformat())
+    booking = WashBooking(1, "alice", 1, datetime.now())
     print(booking.get_occupied_timeslots())

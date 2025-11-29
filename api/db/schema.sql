@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS forecasts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     forecast_time TEXT NOT NULL,
     forecast_value INTEGER NOT NULL,
-    actual_value INTEGER NOT NULL,
+    actual_value INTEGER,
     index_value TEXT NOT NULL
 );
 
