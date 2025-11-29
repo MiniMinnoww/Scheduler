@@ -1,10 +1,8 @@
 
 import numpy as np
-
 from api.carbonintensityapi.intensity_window import IntensityWindow
 from api.db.db import get_all_future_bookings
 from datetime import datetime, timedelta
-
 from api.domain.wash_booking import WashBooking
 
 
@@ -62,5 +60,24 @@ def are_consecutive_slots(slots: [IntensityWindow]):
 
     return True
 
-def get_valid_intensity_windows(intensity_windows: [IntensityWindow]):
-    return intensity_windows
+"""
+Need to get booked timeslots
+Need to get IntensityWindows
+Need to get user available timeslots
+
+From IntensityWindows:
+    remove those which are booked
+    remove those which are not within the user available timeslots
+"""
+
+def get_valid_intensity_windows(available_timeslots: list[datetime]) -> list[IntensityWindow]:
+    intensity_windows = [] # replace with Robin's function
+    booked_timeslots = get_booked_timeslots()
+    valid_intensity_windows = [window for window in intensity_windows if (window.time not in booked_timeslots) and (window.time in available_timeslots)]
+
+    return valid_intensity_windows
+
+if __name__ == '__main__':
+    delta = timedelta(minutes=30)
+    now = datetime.now()
+    windows = [IntensityWindow(now+delta*i, None, None, None) for i in range(10)]
