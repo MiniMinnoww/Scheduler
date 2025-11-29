@@ -4,17 +4,6 @@ import numpy as np
 from api.db.db import get_all_future_bookings
 import datetime
 
-
-# functions:
-def get_available_times(chosen_available_times: np.ndarray, stored_wash_start_times: np.ndarray, stored_wash_durations: np.ndarray):
-    """
-    :param chosen_available_times: array of (start, end) DateTime pairs which the user has indicated they are available for
-    :param stored_wash_start_times: array of DateTime values retrieved from the db which indicate already booked slots
-    :param stored_wash_durations: array of floats retrieved from the db which indicate duration of each wash in stored_wash_start_times
-    :return: array of (start, end) DateTime pairs which can be put into the minimise function to find a time slot.
-    """
-    ...
-
 def get_booked_timeslots() -> list[datetime]:
     """
     Gets a list of timeslots that are already occupied
@@ -26,3 +15,11 @@ def get_booked_timeslots() -> list[datetime]:
         booked_slots.append(*booking.get_occupied_timeslots())
 
     return booked_slots
+
+def get_best_booking(booking_request: dict):
+    """
+    Needs to extract the timings, then cross reference to get the available options
+    :param booking_request:
+    :return:
+    """
+    ...

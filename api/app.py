@@ -1,3 +1,4 @@
+import json
 import time
 from flask import Flask, request, jsonify
 from domain.wash_booking import WashBooking
@@ -24,7 +25,7 @@ def get_booking_for_user():
     except ValueError as e:
         return jsonify({"error": e}), 400
 
-@app.route("/api/save-booking")
+@app.route("/api/save-booking", methods=["POST"])
 def save_booking():
     booking_info = request.get_json()
     try:
@@ -43,13 +44,18 @@ def save_booking():
 
     create_booking(booking)
 
-@app.route("/api/send_available_times")
-def format_available_times():
-    username = request.args.get("username", "")
+@app.route("/api/send_booking_request", methods=["POST"])
+def process_booking():
+    booking_request = json.loads(request.get_json())
+    username = booking_request.get("username", "")
     if error_dict:=validate_username(username):
         return jsonify(error_dict), 400
-    # send the info to logan i guess after i format the times?
-    return {}
+
+    if times:=booking_request.get("times", "") == "":
+        return jsonify({"error": "No times were submitted"})
+
+    booking_request["times"] = [datetime.fromtim]
+
 
 @app.route("/api/user-has-future-booking")
 def user_has_future_booking():

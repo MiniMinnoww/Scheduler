@@ -75,7 +75,6 @@ def create_booking(booking: WashBooking):
             )
         )
 
-
 def get_all_future_bookings():
     with get_connection() as (_, cursor):
         records = cursor.execute(f"SELECT * FROM bookings")
@@ -85,7 +84,7 @@ def get_all_future_bookings():
 def get_usernames():
     with get_connection() as (_, cursor):
         records = cursor.execute(f"SELECT username FROM users")
-        return [row[0] for row in records]
+        return [row[0].lower() for row in records]
 
 def has_future_booking(username: str):
     with get_connection() as (_, cursor):
@@ -120,9 +119,8 @@ def add_forecasts(forecasts: list[IntensityWindow]):
 def get_future_forecasts():
     with get_connection() as (_, cursor):
         records = cursor.execute(f"SELECT * FROM forecasts")
-        forecasts = [IntensityWindow(*record) for record in records]
+        forecasts = [IntensityWindow.from_dict(dict(record)) for record in records]
         return [forecast for forecast in forecasts if forecast.is_future_forecast()]
-
 
 
 if __name__ == "__main__":
