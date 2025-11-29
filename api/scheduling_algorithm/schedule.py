@@ -30,7 +30,7 @@ def get_best_booking(booking_request: dict) -> WashBooking | None:
     valid_windows = get_valid_intensity_windows(booking_request["times"])
     start_time = find_least_intense_slot(valid_windows, duration)
     if start_time is None:
-        return Nones
+        return None
     return WashBooking(None, booking_request["username"], duration, start_time.isoformat())
 
 
