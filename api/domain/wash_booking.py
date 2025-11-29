@@ -3,10 +3,10 @@ import json
 # duration is in hours, can be fractional
 
 class WashBooking:
-    def __init__(self, id: int, username: str, duration: float, start_time_str: str):
+    def __init__(self, id: int, username: str, duration: float, start_datetime: datetime):
         self.id = id
         self.username = username
-        self.start_datetime = datetime.fromisoformat(start_time_str)
+        self.start_datetime = start_datetime
         self.duration = duration
 
 
@@ -44,20 +44,15 @@ class WashBooking:
     def to_json(self):
         return json.dumps(self.to_dict())
 
-    @classmethod
-    def from_dict(cls, data: dict):
-        return cls(
-            id=None,
-            username=data["username"],
-            duration=data["duration"],
-            start_time_str=data["startTimeStr"]
-        )
+    @staticmethod
+    def from_dict(data: dict):
+        return WashBooking(id=None, username=data["username"], duration=data["duration"], start_time=datetime.fromisoformat(data["StartTimeStr"]))
 
-    @classmethod
-    def from_json(cls, json_str: str):
+    @staticmethod
+    def from_json(json_str: str):
         try:
             data = json.loads(json_str)
-            return cls(
+            return WashBooking(
                 id=int(data["id"]),
                 username=str(data["username"]),
                 duration=float(data["duration"]),

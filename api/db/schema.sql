@@ -1,6 +1,6 @@
-DELETE FROM users;
-DELETE FROM forecasts;
-DELETE FROM bookings;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS forecasts;
+DROP TABLE IF EXISTS bookings;
 
 
 CREATE TABLE IF NOT EXISTS users (
