@@ -3,6 +3,11 @@ from datetime import datetime, timedelta, timezone
 
 
 class CarbonIntensity:
+    """
+    Class to interact with the UK Carbon Intensity API.
+    An indicative trend can be given up to 2 days ahead.
+
+    """
     API_TIME_FORMAT: str = "%Y-%m-%dT%H:%MZ"  # ISO8601 format with 'Z' for UTC
 
     def __init__(self):
@@ -29,7 +34,7 @@ class CarbonIntensity:
         future = now + timedelta(hours=hours_from_now)
         return future.strftime(CarbonIntensity.API_TIME_FORMAT)
 
-    def getDataToday(self) -> dict:
+    def getIntensityDataToday(self) -> dict:
         """
         Get Carbon Intensity data for today as JSON.
         :return: Data for today's Carbon Intensity.
@@ -49,7 +54,7 @@ class CarbonIntensity:
         :return: Data for Carbon Intensity statistics.
         """
         start_time = CarbonIntensity._hours_to_iso8601_timestamp(hours_start)
-        end_time = CarbonIntensity._hours_to_iso8601_timestamp(hours_duration)
+        end_time = CarbonIntensity._hours_to_iso8601_timestamp(hours_start + hours_duration)
         r = requests.get(
             f'https://api.carbonintensity.org.uk/intensity/stats/{start_time}/{end_time}',
             params={},
@@ -60,7 +65,6 @@ class CarbonIntensity:
 
 if __name__ == "__main__":
     ci = CarbonIntensity()
-    data = ci.getDataToday()
-    print(data)
-    stats = ci.getIntensityStatsUntil(24)
-    print(stats)
+    t = ci.getIntensityStatsUntil(0.25)
+    print(t)
+    print(t['data'][0]['intensity'])
