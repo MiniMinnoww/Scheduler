@@ -1,16 +1,25 @@
 import requests
 from datetime import datetime, timedelta, timezone
+import intensity_window
 
 
 class CarbonIntensity:
     """
     Class to interact with the UK Carbon Intensity API.
     An indicative trend can be given up to 2 days ahead.
-
     """
+    API_TIME_FORMAT: str = "%Y-%m-%dT%H:%MZ"  # ISO8601 format with 'Z' for UTC
 
     def __init__(self):
-        self.__HEADERS: dict = {'Accept': 'application/json'}
+        self.HEADERS: dict = {'Accept': 'application/json'}
+
+    @staticmethod
+    def _datetime_to_yyyymmdd(dt: datetime) -> str:
+        """
+        Convert datetime object to YYYY-MM-DD string format.
+        :param datetime: Datetime object to convert.
+        """
+        return dt.astimezone(timezone.utc).strftime("%Y-%m-%d")
 
     def get_data_for_half_hour(self, date: str, half_hour_settlement: int) -> dict:
         """
@@ -35,7 +44,7 @@ class CarbonIntensity:
         r = requests.get(
             f'https://api.carbonintensity.org.uk/intensity/date/{date}/{half_hour_settlement}',
             params={},
-            headers=self.__HEADERS
+            headers=self.HEADERS
         )
 
         data = r.json()
@@ -44,5 +53,11 @@ class CarbonIntensity:
 
 if __name__ == "__main__":
     ci = CarbonIntensity()
-    test = ci.get_data_for_half_hour("2025-11-29", 1)
-    print(test)
+    data = ci.get_data_for_half_hour("2025-11-29", 1)
+    print("Data:")
+    print(data)
+    print()
+    print("DTO:")
+    dto = intensity_window.IntensityWindow.from_json(data)
+    print(dto)
+    print(dto.time, dto.forecast, dto.actual, dto.index)
