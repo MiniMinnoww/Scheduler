@@ -18,12 +18,12 @@ class IntensityWindow:
         ts = ts.replace("Z", "+00:00")
         return datetime.fromisoformat(ts)
     
-
-    def from_json(json: str):
+    @staticmethod
+    def from_dict(data: dict):
         time: datetime = IntensityWindow._iso8601_to_datetime(
-            json['from'])
+            data['from'])
 
-        intensity_data: dict = json['intensity']
+        intensity_data: dict = data['intensity']
         forecast: int = intensity_data['forecast']
         actual: int = intensity_data['actual']
         index: str = intensity_data['index']
