@@ -1,80 +1,66 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import json
 # duration is in hours, can be fractional
 
 class WashBooking:
-    def __init__(self, id: int, username: str, duration: float, start_time_str: str, dry_included: bool):
+    def __init__(self, id: int | None, username: str, duration: float, start_datetime: datetime):
         self.id = id
         self.username = username
-        self.start_datetime = datetime.fromisoformat(start_time_str)
+        self.start_datetime = start_datetime
         self.duration = duration
-        self.dryIncluded = dry_included
 
 
     def get_end_time(self):
-        return self.start_datetime + timedelta(hours=self.get_total_duration())
+        return self.start_datetime + timedelta(hours=self.duration)
 
-    def get_total_duration(self):
-        # assumption that the drying takes the same time as the washing
-        if self.dryIncluded:
-            return self.duration * 2
-
-        return self.duration
 
     def is_future_booking(self):
-        return self.start_datetime > datetime.now()
+        return self.start_datetime > datetime.now(timezone.utc)
+
 
     def __str__(self):
         return (
             f"WashBooking(id={self.id}, "
             f"username='{self.username}', "
             f"start_time_str={self.start_datetime.isoformat()}, "
-            f"duration={self.duration}, "
-            f"dryIncluded={self.dryIncluded})"
+            f"duration={self.duration}"
         )
 
     def __repr__(self):
         return (
             f"WashBooking(id={self.id!r}, "
             f"username={self.username!r}, "
-            f"start_time_str={self.start_datetime!r}, "
-            f"duration={self.duration!r}, "
-            f"dryIncluded={self.dryIncluded!r})"
+            f"start_datetime={self.start_datetime!r}, "
+            f"duration={self.duration!r}"
         )
 
     def to_dict(self):
         return {
-            "id": self.id,
             "username": self.username,
-            "start_time_str": self.start_datetime.isoformat(),  # convert datetime to string
+            "startTimeStr": self.start_datetime.isoformat(),  # convert datetime to string
             "duration": self.duration,
-            "dryIncluded": self.dryIncluded
         }
 
     def to_json(self):
         return json.dumps(self.to_dict())
 
-    @classmethod
-    def from_dict(cls, data: dict):
-        return cls(
-            id=None,
-            username=data["username"],
-            duration=data["duration"],
-            start_time_str=data["start_time_str"],
-            dry_included=data["dryIncluded"]
-        )
+    @staticmethod
+    def from_dict(data: dict):
+        return WashBooking(id=data["id"],
+                           username=data["username"],
+                           duration=data["duration"],
+                           start_datetime=datetime.fromisoformat(data["start_time"]))
 
-    @classmethod
-    def from_json(cls, json_str: str):
+    @staticmethod
+    def from_json(json_str: str):
         try:
             data = json.loads(json_str)
-            return cls(
-                id=int(data["id"]),
+            return WashBooking(
+                id=None,
                 username=str(data["username"]),
                 duration=float(data["duration"]),
-                start_time_str=data["start_time_str"],
-                dry_included=bool(data["dryIncluded"])
-            )
+                start_datetime=datetime.fromisoformat(data["startTimeStr"]))
+
         except json.JSONDecodeError as e:
             raise ValueError(f"Invalid JSON: {e}")
         except KeyError as e:
@@ -96,5 +82,5 @@ class WashBooking:
         return timeslots
 
 if __name__ == "__main__":
-    booking = WashBooking(1, "alice", 1, datetime.now().isoformat(), True)
+    booking = WashBooking(1, "alice", 1, datetime.now(timezone.utc))
     print(booking.get_occupied_timeslots())

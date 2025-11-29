@@ -1,14 +1,16 @@
-import os
 import sqlite3
 from contextlib import contextmanager
-from datetime import datetime, timedelta
+import os
+from dto.intensity_window import IntensityWindow
+from domain.wash_booking import WashBooking
 
-from api.carbonintensityapi.intensity_window import IntensityWindow
-from api.domain.wash_booking import WashBooking
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SCHEMA_PATH = os.path.join(BASE_DIR, "schema.sql")
+DB_PATH = os.path.join(BASE_DIR, "washing_times.db")
 
 def get_connection_or_create_db() -> sqlite3.Connection:
-    connection = sqlite3.connect("washing_times.db")
+    connection = sqlite3.connect(DB_PATH)
     cursor = connection.cursor()
 
     res1 = cursor.execute(
@@ -24,7 +26,7 @@ def get_connection_or_create_db() -> sqlite3.Connection:
     ).fetchone()
 
     if res1 is None or res2 is None or res3 is None:
-        with open("schema.sql", "r", encoding="utf-8") as f:
+        with open(SCHEMA_PATH, "r", encoding="utf-8") as f:
             schema = f.read()
             cursor.executescript(schema)
         connection.commit()
@@ -45,7 +47,7 @@ def get_connection():
             connection.commit()
             connection.close()
 
-def get_booking_from_username(username : str):
+def get_booking_from_username(username : str) -> WashBooking | None:
     if username not in get_usernames():
         raise ValueError(f"User ({username}) does not exist!")
     with get_connection() as (_, cursor):
@@ -62,8 +64,8 @@ def get_booking_from_username(username : str):
 def create_booking(booking: WashBooking):
     with get_connection() as (_, cursor):
         query = """
-        INSERT INTO bookings (username, duration, start_time, dry_included)
-        VALUES (?, ?, ?, ?);
+        INSERT INTO bookings (username, duration, start_time)
+        VALUES (?, ?, ?);
         """
         cursor.execute(
             query,
@@ -71,14 +73,13 @@ def create_booking(booking: WashBooking):
                 booking.username,
                 booking.duration,
                 booking.start_datetime.isoformat(),
-                booking.dryIncluded,
             )
         )
 
 def get_all_future_bookings():
     with get_connection() as (_, cursor):
         records = cursor.execute(f"SELECT * FROM bookings")
-        bookings = [WashBooking(*record) for record in records]
+        bookings = [WashBooking.from_dict(dict(record)) for record in records]
         return [booking for booking in bookings if booking.is_future_booking()]
 
 def get_usernames():
@@ -119,7 +120,7 @@ def add_forecasts(forecasts: list[IntensityWindow]):
 def get_future_forecasts():
     with get_connection() as (_, cursor):
         records = cursor.execute(f"SELECT * FROM forecasts")
-        forecasts = [IntensityWindow.from_dict(dict(record)) for record in records]
+        forecasts = [IntensityWindow.from_db_row(record) for record in records]
         return [forecast for forecast in forecasts if forecast.is_future_forecast()]
 
 
