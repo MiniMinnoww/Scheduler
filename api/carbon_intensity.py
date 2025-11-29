@@ -103,6 +103,14 @@ class CarbonIntensity:
         if new_windows:
             db.add_forecasts(new_windows)
 
+    def get_intensity_data_48hrs(self) -> List[WindowIntensity]:
+        """
+        Returns list of intensity data points for the next 48hrs.
+        The points each represent a half-hour window.
+        """
+        self.update_db_missing_future_forecasts()
+        return db.get_future_forecasts()
+
 
 if __name__ == "__main__":
     ci = CarbonIntensity()
