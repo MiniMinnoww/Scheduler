@@ -1,7 +1,9 @@
 import numpy as np
+
+from carbon_intensity import CarbonIntensity
 from dto.intensity_window import IntensityWindow
-from db.db import get_all_future_bookings
-from datetime import datetime, timedelta
+from db.db import get_all_future_bookings, create_booking
+from datetime import datetime, timedelta, time, timezone
 from domain.wash_booking import WashBooking
 
 
@@ -13,7 +15,7 @@ def get_booked_timeslots() -> list[datetime]:
     booked_slots = []
     bookings = get_all_future_bookings()
     for booking in bookings:
-        booked_slots.append(*booking.get_occupied_timeslots())
+        booked_slots += booking.get_occupied_timeslots()
 
     return booked_slots
 
@@ -38,12 +40,13 @@ def find_least_intense_slot(intensity_windows: [IntensityWindow], duration: floa
     :param duration:
     :return:
     """
-    no_slots = int(duration * 2)
+    num_slots = int(duration * 2)
     time_score_dict = {}
-    for i in range(len(intensity_windows) - no_slots):
-        slots = intensity_windows[i:i+no_slots]
+    for i in range(len(intensity_windows) - num_slots+1):
+        slots = intensity_windows[i:i+num_slots]
         if are_consecutive_slots(slots):
             scores = [slot.forecast for slot in slots]
+            print(slots[0].time, np.mean(scores))
             time_score_dict[slots[0].time] = np.mean(scores)
 
     if not time_score_dict:
@@ -70,13 +73,25 @@ From IntensityWindows:
 """
 
 def get_valid_intensity_windows(available_timeslots: list[datetime]) -> list[IntensityWindow]:
-    intensity_windows = [] # replace with Robin's function
+    carbon_intensity = CarbonIntensity()
+    intensity_windows = carbon_intensity.get_intensity_data_48hrs()
     booked_timeslots = get_booked_timeslots()
     valid_intensity_windows = [window for window in intensity_windows if (window.time not in booked_timeslots) and (window.time in available_timeslots)]
 
     return valid_intensity_windows
 
 if __name__ == '__main__':
+    tomorrow = datetime.today().date() + timedelta(days=1)
+    time =datetime.combine(
+        tomorrow,
+        time(18, 30, tzinfo=timezone.utc)
+    )
+
+    create_booking(WashBooking(None, 'alice', 0.5,time))
+
     delta = timedelta(minutes=30)
-    now = datetime.now()
-    windows = [IntensityWindow(now+delta*i, None, None, None) for i in range(10)]
+    print(get_best_booking({
+        "username": "alice",
+        "times": [time+delta*i for i in range(96)],
+        "duration": 1
+    }))

@@ -17,7 +17,7 @@ class CarbonIntensity:
     def _datetime_to_yyyymmdd(dt: datetime) -> str:
         """
         Convert datetime object to YYYY-MM-DD string format.
-        :param datetime: Datetime object to convert.
+        :param dt: Datetime object to convert.
         """
         return dt.astimezone(timezone.utc).strftime("%Y-%m-%d")
 
@@ -44,7 +44,7 @@ class CarbonIntensity:
     def get_data_for_half_hour(self, dt: datetime, half_hour_settlement: int) -> dict:
         """
         Get Carbon Intensity data for a specific half hour period of a certain date.
-        :param date: Date in YYYY-MM-DD format.
+        :param dt: Date in YYYY-MM-DD format.
         :param half_hour_settlement: Half hour settlement period between 1-48 (1 is the first settlement on this date)>
         :return: Carbon intensity data for this period.
         """
@@ -63,7 +63,7 @@ class CarbonIntensity:
         """
         Fetch and store any missing half-hour forecasts between now and 2 days' time.
         """ 
-        existing_forecasts: List[IntensityWindow] = db.get_future_forecasts()
+        existing_forecasts: list[IntensityWindow] = db.get_future_forecasts()
         # Normalise times to UTC and strip seconds/micros in case
         existing_times = {
             w.time.astimezone(timezone.utc).replace(second=0, microsecond=0)
@@ -103,7 +103,7 @@ class CarbonIntensity:
         if new_windows:
             db.add_forecasts(new_windows)
 
-    def get_intensity_data_48hrs(self) -> List[WindowIntensity]:
+    def get_intensity_data_48hrs(self) -> list[IntensityWindow]:
         """
         Returns list of intensity data points for the next 48hrs.
         The points each represent a half-hour window.
@@ -114,7 +114,7 @@ class CarbonIntensity:
 
 if __name__ == "__main__":
     ci = CarbonIntensity()
-    dt: str = datetime.strptime("2025-11-30", "%Y-%m-%d")
+    dt = datetime.strptime("2025-11-30", "%Y-%m-%d")
     #for i in range(1, 48):
         #dat = ci.get_data_for_half_hour(dt, i)
         #dto = IntensityWindow.from_json_dict(dat)

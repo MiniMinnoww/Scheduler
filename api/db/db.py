@@ -79,7 +79,7 @@ def create_booking(booking: WashBooking):
 def get_all_future_bookings():
     with get_connection() as (_, cursor):
         records = cursor.execute(f"SELECT * FROM bookings")
-        bookings = [WashBooking(*record) for record in records]
+        bookings = [WashBooking.from_dict(dict(record)) for record in records]
         return [booking for booking in bookings if booking.is_future_booking()]
 
 def get_usernames():

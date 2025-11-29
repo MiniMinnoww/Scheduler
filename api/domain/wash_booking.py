@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import json
 # duration is in hours, can be fractional
 
@@ -15,7 +15,8 @@ class WashBooking:
 
 
     def is_future_booking(self):
-        return self.start_datetime > datetime.now()
+        return self.start_datetime > datetime.now(timezone.utc)
+
 
     def __str__(self):
         return (
@@ -29,7 +30,7 @@ class WashBooking:
         return (
             f"WashBooking(id={self.id!r}, "
             f"username={self.username!r}, "
-            f"start_time_str={self.start_datetime!r}, "
+            f"start_datetime={self.start_datetime!r}, "
             f"duration={self.duration!r}"
         )
 
@@ -45,10 +46,10 @@ class WashBooking:
 
     @staticmethod
     def from_dict(data: dict):
-        return WashBooking(id=None,
+        return WashBooking(id=data["id"],
                            username=data["username"],
                            duration=data["duration"],
-                           start_datetime=datetime.fromisoformat(data["startTimeStr"]))
+                           start_datetime=datetime.fromisoformat(data["start_time"]))
 
     @staticmethod
     def from_json(json_str: str):
@@ -81,5 +82,5 @@ class WashBooking:
         return timeslots
 
 if __name__ == "__main__":
-    booking = WashBooking(1, "alice", 1, datetime.now())
+    booking = WashBooking(1, "alice", 1, datetime.now(timezone.utc))
     print(booking.get_occupied_timeslots())
