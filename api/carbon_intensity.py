@@ -81,6 +81,7 @@ class CarbonIntensity:
 
         # Walk every half-hour in this window, check which are missing
         new_windows: list[IntensityWindow] = []
+        # print('already got:', existing_times)
         current = start
         
         while current <= end:
@@ -94,6 +95,7 @@ class CarbonIntensity:
                 # Convert from API dict to DTO objects
                 window = IntensityWindow.from_dict(data)
                 new_windows.append(window)
+                # print('just added:', window)
 
             current += timedelta(minutes=30)
 
