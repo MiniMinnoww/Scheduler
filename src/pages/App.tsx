@@ -13,7 +13,7 @@ function MakeBookingPage() {
   const makeBooking = () => {
     if (!timelineRef.current) return
 
-    fetch("127.0.0.0:5000/api/send_available_times", {
+    fetch("http://localhost:5000/api/send_available_times", {
       method: "POST",
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({"times": timelineRef.current.getAvailableChunks()})

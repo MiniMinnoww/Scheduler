@@ -1,9 +1,11 @@
 import time
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from domain.wash_booking import WashBooking
 from db.db import get_all_future_bookings, get_usernames, create_booking, has_future_booking
 from utlis import *
 app = Flask(__name__)
+CORS(app, origins=["http://localhost:5173"])  # change port if your dev server differs
 
 @app.route('/api/time')
 def get_current_time():
