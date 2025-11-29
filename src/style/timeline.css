@@ -1,0 +1,43 @@
+.timeline-container {
+    width: 100%;
+    padding: 20px;
+    height: 20%;
+
+    overflow-x: scroll;
+
+    display: flex;
+    flex-direction: row;
+
+    user-select: none;
+}
+
+.timeline-number {
+    padding: 5px;
+}
+
+.timeline-chunk {
+    border-left: 1px dashed var(--bs-gray);
+    height: 100%;
+}
+
+.selectable-chunk {
+    height: 90%;
+    width: 100%;
+
+    transition: transform 0.1s ease-out;
+}
+
+.selectable-chunk.active {
+    background-color: var(--bs-primary);
+    transform: scaleX(1.1);
+}
+
+.selectable-chunk.active:hover {
+    background-color: var(--bs-primary);
+    transform: scale(1.1);
+}
+
+.selectable-chunk.inactive:hover {
+    background-color: var(--bs-secondary);
+    transform: scale(1.1);
+}
