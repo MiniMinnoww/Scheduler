@@ -1,8 +1,15 @@
 import sqlite3
 from contextlib import contextmanager
+<<<<<<< HEAD
 import os
 from api.carbonintensityapi.intensity_window import IntensityWindow
 from api.domain.wash_booking import WashBooking
+=======
+from datetime import datetime, timedelta
+
+from dto.intensity_window import IntensityWindow
+from domain.wash_booking import WashBooking
+>>>>>>> f444f06 (robin wip)
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -120,7 +127,7 @@ def add_forecasts(forecasts: list[IntensityWindow]):
 def get_future_forecasts():
     with get_connection() as (_, cursor):
         records = cursor.execute(f"SELECT * FROM forecasts")
-        forecasts = [IntensityWindow.from_dict(dict(record)) for record in records]
+        forecasts = [IntensityWindow.from_db_row(record) for record in records]
         return [forecast for forecast in forecasts if forecast.is_future_forecast()]
 
 
