@@ -25,19 +25,19 @@ CREATE TABLE IF NOT EXISTS forecasts (
     index_value TEXT NOT NULL
 );
 
-INSERT INTO users (username) VALUES
-    ('alice'),
-    ('bob'),
-    ('charlie'),
-    ('diana'),
-    ('eve'),
-    ('frank');
+INSERT INTO users (username, points) VALUES
+    ('alice', 0),
+    ('bob', 0),
+    ('charlie', 607),
+    ('diana', 0),
+    ('eve', 0),
+    ('frank', 0);
 
 INSERT INTO bookings (username, duration, start_time, points)
 VALUES (
     'charlie',
     1.0,
     '2025-12-01T14:00:00+00:00',
-    60.0
+    607.0
 );
 
