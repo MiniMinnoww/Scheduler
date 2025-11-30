@@ -9,6 +9,7 @@ from db.db import (get_all_future_bookings, get_usernames,
                    create_booking, has_future_booking, get_booking_from_username, \
     update_points, get_user_by_username)
 from datetime import datetime
+import json
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:5173"])  # change port if your dev server differs
 
@@ -33,7 +34,7 @@ def get_booking_for_user():
 
 @app.route("/api/save-booking", methods=["POST"])
 def save_booking():
-    booking_info = request.get_json()
+    booking_info = json.dumps(request.get_json())
     try:
         booking = WashBooking.from_json(booking_info)
     except ValueError as e:
