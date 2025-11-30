@@ -65,8 +65,8 @@ def get_booking_from_username(username : str) -> WashBooking | None:
 def create_booking(booking: WashBooking):
     with get_connection() as (_, cursor):
         query = """
-        INSERT INTO bookings (username, duration, start_time)
-        VALUES (?, ?, ?);
+        INSERT INTO bookings (username, duration, start_time, points)
+        VALUES (?, ?, ?, ?);
         """
         cursor.execute(
             query,
@@ -74,6 +74,7 @@ def create_booking(booking: WashBooking):
                 booking.username,
                 booking.duration,
                 booking.start_datetime.isoformat(),
+                booking.points
             )
         )
 
