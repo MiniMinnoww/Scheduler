@@ -143,7 +143,7 @@ def update_points(points, username):
             UPDATE Users
             SET points = points + ?
             WHERE username = ?
-        """, (points, username))
+        """, (int(points), username))
 
 if __name__ == "__main__":
-    print(get_booking_from_username("charlie"))
+    print(has_future_booking("alice"))

@@ -5,8 +5,9 @@ from flask_cors import CORS
 from scheduling_algorithm import schedule
 from utlis import validate_username
 from domain.wash_booking import WashBooking
-from db.db import get_all_future_bookings, get_usernames, create_booking, has_future_booking, get_booking_from_username, \
-    update_points
+from db.db import (get_all_future_bookings, get_usernames,
+                   create_booking, has_future_booking, get_booking_from_username, \
+    update_points, get_user_by_username)
 from datetime import datetime
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:5173"])  # change port if your dev server differs
@@ -78,6 +79,14 @@ def user_has_future_booking():
         return {"result":has_future_booking(username)}
     except ValueError as e:
         return jsonify({"error":e}), 400
+
+@app.route("/api/get-user-details")
+def get_user_details():
+    username = request.args.get("username", "")
+    if error_dict := validate_username(username):
+        return jsonify(error_dict), 400
+
+    return get_user_by_username(username)
 
 if __name__ == "__main__":
     app.run()
