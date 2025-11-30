@@ -19,7 +19,7 @@ def get_booked_timeslots() -> list[datetime]:
 
     return booked_slots
 
-def get_best_booking(booking_request: dict) -> (WashBooking, float):
+def get_best_booking(booking_request: dict) -> WashBooking | None:
     """
     Needs to extract the timings, then cross reference to get the available options
     :param booking_request:
@@ -33,10 +33,11 @@ def get_best_booking(booking_request: dict) -> (WashBooking, float):
     if start_time is None:
         return None
 
-    booking = WashBooking(None, booking_request["username"], duration, start_time)
-    points = get_carbon_savings(booking.duration, score, intensity_windows)
+    points = get_carbon_savings(duration, score, intensity_windows)
+    booking = WashBooking(None, booking_request["username"], duration, start_time, points)
 
-    return booking, points
+
+    return booking
 
 
 def score_potential_slots(intensity_windows: [IntensityWindow], duration: float) -> dict | None:

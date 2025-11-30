@@ -1,4 +1,3 @@
-import json
 import time
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -6,7 +5,8 @@ from flask_cors import CORS
 from scheduling_algorithm import schedule
 from utlis import validate_username
 from domain.wash_booking import WashBooking
-from db.db import get_all_future_bookings, get_usernames, create_booking, has_future_booking, get_booking_from_username
+from db.db import get_all_future_bookings, get_usernames, create_booking, has_future_booking, get_booking_from_username, \
+    update_points
 from datetime import datetime
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:5173"])  # change port if your dev server differs
@@ -48,6 +48,7 @@ def save_booking():
         return jsonify({"error": "Cannot have a negative or 0 duration."}), 400
 
     create_booking(booking)
+    update_points(booking.points, booking.username)
 
 @app.route("/api/send-booking-request", methods=["POST"])
 def process_booking():
@@ -60,11 +61,11 @@ def process_booking():
         return jsonify({"error": "No times were submitted"}), 400
 
     booking_request["times"] = [datetime.fromisoformat(timeslot) for timeslot in times]
-    booking, points = schedule.get_best_booking(booking_request).to_json()
+    booking = schedule.get_best_booking(booking_request).to_json()
     if booking is None:
         return {"booking": None}
 
-    return {"booking": booking.to_json(), "points": points}
+    return {"booking": booking.to_json()}
 
 
 @app.route("/api/user-has-future-booking")

@@ -3,6 +3,7 @@ from contextlib import contextmanager
 import os
 from dto.intensity_window import IntensityWindow
 from domain.wash_booking import WashBooking
+from domain.user import User
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -123,6 +124,26 @@ def get_future_forecasts():
         forecasts = [IntensityWindow.from_db_row(record) for record in records]
         return [forecast for forecast in forecasts if forecast.is_future_forecast()]
 
+
+def get_user_by_username(username):
+    if username.lower() not in get_usernames():
+        raise ValueError("User does not exist!")
+    with get_connection() as (_, cursor):
+        record = cursor.execute("""
+            SELECT * FROM Users WHERE username = ?
+        """, (username,)).fetchone()
+
+        return User.from_dict(dict(record))
+
+def update_points(points, username):
+    if username.lower() not in get_usernames():
+        raise ValueError("User does not exist!")
+    with get_connection() as (_, cursor):
+        cursor.execute("""
+            UPDATE Users
+            SET points = points + ?
+            WHERE username = ?
+        """, (points, username))
 
 if __name__ == "__main__":
     get_booking_from_username("charlie")

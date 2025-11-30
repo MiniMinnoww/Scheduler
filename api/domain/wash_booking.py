@@ -3,11 +3,12 @@ import json
 # duration is in hours, can be fractional
 
 class WashBooking:
-    def __init__(self, id: int | None, username: str, duration: float, start_datetime: datetime):
+    def __init__(self, id: int | None, username: str, duration: float, start_datetime: datetime, points:float =0.0):
         self.id = id
         self.username = username
         self.start_datetime = start_datetime
         self.duration = duration
+        self.points = points
 
 
     def get_end_time(self):
@@ -23,7 +24,8 @@ class WashBooking:
             f"WashBooking(id={self.id}, "
             f"username='{self.username}', "
             f"start_time_str={self.start_datetime.isoformat()}, "
-            f"duration={self.duration}"
+            f"duration={self.duration},"
+            f"points={self.points},"
         )
 
     def __repr__(self):
@@ -31,7 +33,8 @@ class WashBooking:
             f"WashBooking(id={self.id!r}, "
             f"username={self.username!r}, "
             f"start_datetime={self.start_datetime!r}, "
-            f"duration={self.duration!r}"
+            f"duration={self.duration!r},"
+            f"points={self.points!r}"
         )
 
     def to_dict(self):
@@ -39,6 +42,7 @@ class WashBooking:
             "username": self.username,
             "startTimeStr": self.start_datetime.isoformat(),  # convert datetime to string
             "duration": self.duration,
+            "points": self.points
         }
 
     def to_json(self):
@@ -49,7 +53,8 @@ class WashBooking:
         return WashBooking(id=data["id"],
                            username=data["username"],
                            duration=data["duration"],
-                           start_datetime=datetime.fromisoformat(data["start_time"]))
+                           start_datetime=datetime.fromisoformat(data["start_time"]),
+                           points=data["points"])
 
     @staticmethod
     def from_json(json_str: str):
@@ -59,7 +64,8 @@ class WashBooking:
                 id=None,
                 username=str(data["username"]),
                 duration=float(data["duration"]),
-                start_datetime=datetime.fromisoformat(data["startTimeStr"]))
+                start_datetime=datetime.fromisoformat(data["startTimeStr"]),
+                points=float(data["points"]))
 
         except json.JSONDecodeError as e:
             raise ValueError(f"Invalid JSON: {e}")
