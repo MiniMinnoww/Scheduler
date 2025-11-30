@@ -60,11 +60,11 @@ def process_booking():
         return jsonify({"error": "No times were submitted"}), 400
 
     booking_request["times"] = [datetime.fromisoformat(timeslot) for timeslot in times]
-    booking = schedule.get_best_booking(booking_request).to_json()
+    booking, points = schedule.get_best_booking(booking_request).to_json()
     if booking is None:
         return {"booking": None}
 
-    return {"booking": booking.to_json()}
+    return {"booking": booking.to_json(), "points": points}
 
 
 @app.route("/api/user-has-future-booking")

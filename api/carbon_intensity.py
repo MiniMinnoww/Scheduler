@@ -57,6 +57,9 @@ class CarbonIntensity:
         )
 
         data = r.json()
+        if not data["data"]:
+            return None
+
         return data['data'][0]
 
     def update_db_missing_future_forecasts(self) -> None:
@@ -93,8 +96,9 @@ class CarbonIntensity:
                 data = self.get_data_for_half_hour(current, settlement)
 
                 # Convert from API dict to DTO objects
-                window = IntensityWindow.from_dict(data)
-                new_windows.append(window)
+                if data:
+                    window = IntensityWindow.from_dict(data)
+                    new_windows.append(window)
                 # print('just added:', window)
 
             current += timedelta(minutes=30)

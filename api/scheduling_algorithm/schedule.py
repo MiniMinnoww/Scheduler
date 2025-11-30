@@ -19,18 +19,24 @@ def get_booked_timeslots() -> list[datetime]:
 
     return booked_slots
 
-def get_best_booking(booking_request: dict) -> WashBooking | None:
+def get_best_booking(booking_request: dict) -> (WashBooking, float):
     """
     Needs to extract the timings, then cross reference to get the available options
     :param booking_request:
     :return:
     """
+    carbon_intensity = CarbonIntensity()
+    intensity_windows = carbon_intensity.get_intensity_data_48hrs()
     duration = booking_request["duration"]
-    valid_windows = get_valid_intensity_windows(booking_request["times"])
-    start_time = find_least_intense_slot(valid_windows, duration)
+    valid_windows = get_valid_intensity_windows(intensity_windows, booking_request["times"])
+    start_time, score = find_least_intense_slot(valid_windows, duration)
     if start_time is None:
         return None
-    return WashBooking(None, booking_request["username"], duration, start_time)
+
+    booking = WashBooking(None, booking_request["username"], duration, start_time)
+    points = get_carbon_savings(booking.duration, score, intensity_windows)
+
+    return booking, points
 
 
 def score_potential_slots(intensity_windows: [IntensityWindow], duration: float) -> dict | None:
@@ -51,17 +57,18 @@ def score_potential_slots(intensity_windows: [IntensityWindow], duration: float)
 
     return time_score_dict
 
-def find_least_intense_slot(intensity_windows: [IntensityWindow], duration: float) -> datetime | None:
+def find_least_intense_slot(intensity_windows: [IntensityWindow], duration: float) -> (datetime,float):
     time_score_dict = score_potential_slots(intensity_windows, duration)
     if not time_score_dict:
         return None
-    return min(time_score_dict, key=time_score_dict.get)
+    min_key = min(time_score_dict, key=time_score_dict.get)
+    return min_key, time_score_dict[min_key]
 
-def find_most_intense_slot(intensity_windows: [IntensityWindow], duration: float) -> datetime | None:
+def find_most_intense_slot(intensity_windows: [IntensityWindow], duration: float) -> float | None:
     time_score_dict = score_potential_slots(intensity_windows, duration)
     if not time_score_dict:
         return None
-    return max(time_score_dict, key=time_score_dict.get)
+    return max(time_score_dict.values())
 
 def are_consecutive_slots(slots: [IntensityWindow]):
     delta = timedelta(minutes=30)
@@ -71,34 +78,28 @@ def are_consecutive_slots(slots: [IntensityWindow]):
 
     return True
 
-def get_valid_intensity_windows(available_timeslots: list[datetime]) -> list[IntensityWindow]:
-    carbon_intensity = CarbonIntensity()
-    intensity_windows = carbon_intensity.get_intensity_data_48hrs()
+def get_valid_intensity_windows(intensity_windows, available_timeslots: list[datetime]) -> list[IntensityWindow]:
+    print(intensity_windows)
     booked_timeslots = get_booked_timeslots()
     valid_intensity_windows = [window for window in intensity_windows if (window.time not in booked_timeslots) and (window.time in available_timeslots)]
 
     return valid_intensity_windows
 
-def get_carbon_savings(duration: float) -> int:
-    carbon_intensity = CarbonIntensity()
-    all_intensity_windows = carbon_intensity.get_intensity_data_48hrs()
+def get_carbon_savings(duration: float, score: float, all_intensity_windows) -> float:
     # for now this should only be used to calculate the savings immediately after making a booking
     # since it will only have data for the upcoming 48 hours - idk how to access db in the correct way
     # sort in the morning?
     worst_slot_score = find_most_intense_slot(all_intensity_windows, duration)
-    # I have also realised I don't know how to get the actual score we've kept in the dictionary
-    # since the functions we've created are returning just a datatime object HELP
-    # Oh I give up i don't even know how to refactor the db to store the scores to compare the worst scores to
-    return 0
+    return (worst_slot_score - score) * 10
 
 if __name__ == '__main__':
-    tomorrow = datetime.today().date() + timedelta(days=1)
+    day = datetime.today().date()
     time =datetime.combine(
-        tomorrow,
+        day,
         time(18, 30, tzinfo=timezone.utc)
     )
 
-    create_booking(WashBooking(None, 'alice', 0.5,time))
+    create_booking(WashBooking(None, 'alice', 1.5,datetime(2025, 12, 1, 2, 0, tzinfo=timezone.utc)))
 
     delta = timedelta(minutes=30)
     print(get_best_booking({
