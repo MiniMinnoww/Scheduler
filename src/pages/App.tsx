@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import Greeting, {type GreetingHandle} from "../components/Greeting.tsx";
 import BookingDisplay from "../components/BookingDisplay.tsx";
 import MakeBookingButton from "../components/MakeBookingButton.tsx";
-import type {UserBooking} from "../interfaces/UserBooking.tsx";
+import {UserBookingDTO, type UserBooking} from "../interfaces/UserBooking.ts";
 
 
 interface HasFutureBookingResponse {
@@ -41,9 +41,21 @@ function App() {
   }
 
   const getUserFutureBookingRequest =  async () => {
-    const res = await fetch(`http://localhost:5000/api/get-user-booking/?username=${getUsername()}`);
-    const json: UserBooking = await res.json();
-    setUserBooking(json);
+    fetch(`http://localhost:5000/api/get-user-booking/?username=${getUsername()}`).then(async (res) => {
+      const req = await res.json();
+      const raw = req["booking"]
+      const dto = new UserBookingDTO(
+        raw.username,
+        raw.startTimeStr,
+        raw.duration
+      );
+      console.log(dto)
+
+      setUserBooking(dto.toUserBooking());
+    }).catch((error) => {
+      alert(`An error occurred!\n${error}`)
+    });
+
   }
 
   const getUsername = () => usernameRef.current ? usernameRef.current.getUsername() : ""
@@ -75,6 +87,8 @@ function App() {
       const json: UserBooking = await res.json()
       const ok = confirm(`Booking at ${json.startDatetime.formatHoursMinutes()}`)
       if (ok) confirmBooking()
+    }).catch((reason) => {
+      alert(`There was an issue with your booking:\n${reason}`)
     })
   }
 
@@ -83,7 +97,7 @@ function App() {
       <TitleBar />
       <Greeting ref={usernameRef}/>
 
-      {hasBooking && <BookingDisplay />}
+      {hasBooking && <BookingDisplay userBooking={userBooking}/>}
 
       <Timeline
         ref={timelineRef}

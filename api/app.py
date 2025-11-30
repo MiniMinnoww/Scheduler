@@ -26,7 +26,7 @@ def get_booking_for_user():
     if error_dict := validate_username(username):
         return jsonify(error_dict), 400
     try:
-        return {"booking":get_booking_from_username(username).to_json()}
+        return {"booking": get_booking_from_username(username).to_dict()}
     except ValueError as e:
         return jsonify({"error": e}), 400
 

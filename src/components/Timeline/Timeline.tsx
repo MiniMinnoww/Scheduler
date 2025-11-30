@@ -49,13 +49,27 @@ const Timeline = forwardRef<TimelineHandle, TimelineProps>(({readonly, onSelecti
 
   useEffect(() => {
     const allHours = []
+    const pendingSelections: { index: number; value: boolean }[] = [];
+
     for (let i = 0; i < MAX_TIME_STEPS; i++) {
       const newDate = new Date().ceilToHalfHour().addHours(TIME_STEP * i)
-      if (currentBooking)
-        updateSelection(i, newDate > currentBooking.startDatetime && newDate <= (currentBooking.startDatetime.addHours(currentBooking.duration)))
+
+      if (currentBooking) {
+        const bookingDate = new Date(currentBooking.startDatetime).ceilToHalfHour();
+        const value =
+          newDate >= bookingDate &&
+          newDate < bookingDate.ceilToHalfHour().addHours(currentBooking.duration);
+
+        pendingSelections.push({ index: i, value });
+      }
+
       allHours.push(newDate)
     }
     setTimes(allHours)
+
+    pendingSelections.forEach(({ index, value }) =>
+      updateSelection(index, value)
+    );
 
     if (readonly) return;
 
@@ -69,7 +83,7 @@ const Timeline = forwardRef<TimelineHandle, TimelineProps>(({readonly, onSelecti
       document.removeEventListener("mousedown", handleMouseDown);
       document.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [readonly])
+  }, [currentBooking, readonly])
 
   return (
     <div className="timeline-container bg-dark text-white">
