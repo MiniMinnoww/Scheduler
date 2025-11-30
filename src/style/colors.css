@@ -3,3 +3,13 @@
     --bs-secondary: #97D4AC;
     --accent:      #7CC9B0;
 }
+
+button {
+    transition: transform 1s ease-out;
+}
+button:hover {
+    transform: scale(0.9);
+}
+button:active {
+    transform: scale(0.5);
+}
