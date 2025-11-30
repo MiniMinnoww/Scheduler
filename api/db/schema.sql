@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS bookings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL,
     duration REAL NOT NULL,
-    start_time TEXT NOT NULL
+    start_time TEXT NOT NULL,
+    points FLOAT DEFAULT 0.0
 );
 
 CREATE TABLE IF NOT EXISTS forecasts (
@@ -30,3 +31,12 @@ INSERT INTO users (username) VALUES
     ('diana'),
     ('eve'),
     ('frank');
+
+INSERT INTO bookings (username, duration, start_time, points)
+VALUES (
+    'charlie',
+    1.0,
+    '2025-12-01T14:00:00+00:00',
+    60.0
+);
+

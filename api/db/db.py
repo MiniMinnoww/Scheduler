@@ -60,7 +60,7 @@ def get_booking_from_username(username : str) -> WashBooking | None:
     if booking_record is None:
         return None
 
-    return WashBooking(*booking_record)
+    return WashBooking.from_dict(dict(booking_record))
 
 def create_booking(booking: WashBooking):
     with get_connection() as (_, cursor):
@@ -146,4 +146,4 @@ def update_points(points, username):
         """, (points, username))
 
 if __name__ == "__main__":
-    get_booking_from_username("charlie")
+    print(get_booking_from_username("charlie"))
