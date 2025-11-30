@@ -1,24 +1,17 @@
 import "../style/greeting.css"
 import {useEffect, useState} from "react";
-import {UserDetails, type UserDetailsDTO} from "../interfaces/UserDetails.ts";
 
 export interface GreetingProps {
   callback: (a: string) => void
+  points: number
 }
-const Greeting = ({callback}: GreetingProps) => {
+const Greeting = ({callback, points}: GreetingProps) => {
   const [selectedUser, setSelectedUser] = useState("charlie")
-  const [points, setPoints] = useState(0)
+
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/get-user-details?username=${selectedUser}`).then(async res => {
-      if (res.ok) {
-        const json: UserDetailsDTO = await res.json()
-        const userDetails = UserDetails.fromJson(json)
-
-        setPoints(userDetails.points)
-      }
-    })
-  }, [selectedUser]);
+    console.log(points)
+  }, [selectedUser, points]);
 
   const setUser = (v: string) => {
     setSelectedUser(v)
