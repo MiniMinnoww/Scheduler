@@ -3,6 +3,7 @@ import "../../util/Extensions"
 import TimelineChunk, {type TimelineChunkHandle} from "./TimelineChunk.tsx";
 import { forwardRef } from "react";
 import '../../style/timeline.css';
+import type {UserBooking} from "../../interfaces/UserBooking.tsx";
 
 const MAX_TIME_STEPS: number = 96
 const TIME_STEP: number = 0.5 // Half an hour
@@ -14,9 +15,10 @@ export interface TimelineHandle {
 interface TimelineProps {
   readonly: boolean
   onSelectionChange: (v: boolean[]) => void;
+  currentBooking: UserBooking
 }
 
-const Timeline = forwardRef<TimelineHandle, TimelineProps>(({readonly, onSelectionChange}, ref) => {
+const Timeline = forwardRef<TimelineHandle, TimelineProps>(({readonly, onSelectionChange, currentBooking}, ref) => {
   const [times, setTimes] = useState<Date[]>([])
   const [isMouseDown, setIsMouseDown] = useState(false)
 
@@ -48,7 +50,10 @@ const Timeline = forwardRef<TimelineHandle, TimelineProps>(({readonly, onSelecti
   useEffect(() => {
     const allHours = []
     for (let i = 0; i < MAX_TIME_STEPS; i++) {
-      allHours.push(new Date().ceilToHalfHour().addHours(TIME_STEP * i))
+      const newDate = new Date().ceilToHalfHour().addHours(TIME_STEP * i)
+      if (currentBooking)
+        updateSelection(i, newDate > currentBooking.startDatetime && newDate <= (currentBooking.startDatetime.addHours(currentBooking.duration)))
+      allHours.push(newDate)
     }
     setTimes(allHours)
 

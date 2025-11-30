@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import Greeting, {type GreetingHandle} from "../components/Greeting.tsx";
 import BookingDisplay from "../components/BookingDisplay.tsx";
 import MakeBookingButton from "../components/MakeBookingButton.tsx";
+import type {UserBooking} from "../interfaces/UserBooking.tsx";
 
 
 interface HasFutureBookingResponse {
@@ -16,12 +17,6 @@ interface HasFutureBookingResponse {
   error: string
 }
 
-interface UserBooking {
-  id: number
-  username: string
-  startDatetime: Date
-  duration: number
-}
 
 function App() {
   // Reference to the UI timeline object
@@ -37,21 +32,28 @@ function App() {
 
   const usernameRef = useRef<GreetingHandle>(null)
 
+
+  const sendHasFutureBookingRequest = async () => {
+    const res = await fetch(`http://localhost:5000/api/user-has-future-booking?username=${getUsername()}`);
+    const json: HasFutureBookingResponse = await res.json();
+    setHasBooking(json.result);
+    return json.result;
+  }
+
+  const getUserFutureBookingRequest =  async () => {
+    const res = await fetch(`http://localhost:5000/api/get-user-booking/?username=${getUsername()}`);
+    const json: UserBooking = await res.json();
+    setUserBooking(json);
+  }
+
   const getUsername = () => usernameRef.current ? usernameRef.current.getUsername() : ""
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/user-has-future-booking")
-      .then(async res => {
-        const json: HasFutureBookingResponse = await res.json()
-        setHasBooking(json.result)
+    sendHasFutureBookingRequest()
+      .then((hasBooking: boolean) => {
+        if (hasBooking) getUserFutureBookingRequest()
       })
-
-    fetch(`http://localhost:5000/api/get-user-booking/?username=${getUsername()}`)
-      .then(async res => {
-        const json: UserBooking = await res.json()
-        setUserBooking(json)
-      })
-  })
+  }, [usernameRef])
 
   const confirmBooking = () => {
     // TODO: implement
@@ -61,9 +63,7 @@ function App() {
     if (!timelineRef.current)
       return
 
-    console.log(getUsername())
-
-    fetch("http://localhost:5000/api/send_booking_request", {
+    fetch("http://localhost:5000/api/send-booking-request", {
       method: "POST",
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -72,8 +72,8 @@ function App() {
         duration: 1.5
       })
     }).then(async res => {
-      const json = await res.json()
-      const ok = confirm(`Booking at XX:XX?`)
+      const json: UserBooking = await res.json()
+      const ok = confirm(`Booking at ${json.startDatetime.formatHoursMinutes()}`)
       if (ok) confirmBooking()
     })
   }
@@ -89,6 +89,7 @@ function App() {
         ref={timelineRef}
         readonly={hasBooking}
         onSelectionChange={onSelectionChange}
+        currentBooking={userBooking}
       />
 
       {!hasBooking &&

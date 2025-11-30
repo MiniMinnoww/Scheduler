@@ -51,7 +51,7 @@ def save_booking():
 
 @app.route("/api/send-booking-request", methods=["POST"])
 def process_booking():
-    booking_request = json.loads(request.get_json())
+    booking_request = request.get_json()
     username = booking_request.get("username", "")
     if error_dict:=validate_username(username):
         return jsonify(error_dict), 400
