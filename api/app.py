@@ -51,6 +51,7 @@ def save_booking():
 
     create_booking(booking)
     update_points(booking.points, booking.username)
+    return "{}", 200
 
 @app.route("/api/send-booking-request", methods=["POST"])
 def process_booking():

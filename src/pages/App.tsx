@@ -55,8 +55,9 @@ function App() {
     sendHasFutureBookingRequest()
       .then((hasBooking: boolean) => {
         if (hasBooking) getUserFutureBookingRequest()
+        else setUserBooking(null)
       })
-  }, [username])
+  }, [username, userBooking])
 
   const confirmBooking = (booking: UserBooking) => {
     fetch("http://localhost:5000/api/save-booking", {

@@ -60,8 +60,9 @@ const Timeline = forwardRef<TimelineHandle, TimelineProps>(({readonly, onSelecti
           newDate >= bookingDate &&
           newDate < bookingDate.ceilToHalfHour().addHours(currentBooking.duration);
 
-        pendingSelections.push({ index: i, value });
+        pendingSelections.push({ index: i, value: value });
       }
+      else pendingSelections.push({ index: i, value: false })
 
       allHours.push(newDate)
     }
