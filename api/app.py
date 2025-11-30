@@ -88,7 +88,7 @@ def get_user_details():
     if error_dict := validate_username(username):
         return jsonify(error_dict), 400
 
-    return get_user_by_username(username)
+    return get_user_by_username(username).to_json()
 
 if __name__ == "__main__":
     app.run()
