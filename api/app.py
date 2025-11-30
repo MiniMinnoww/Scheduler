@@ -61,7 +61,7 @@ def process_booking():
 
     booking_request["times"] = [datetime.fromisoformat(timeslot) for timeslot in times]
 
-    schedule.get_best_booking(booking_request)
+    return schedule.get_best_booking(booking_request).to_json()
 
 
 @app.route("/api/user-has-future-booking")
