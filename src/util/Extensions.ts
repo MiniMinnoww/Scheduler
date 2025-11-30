@@ -2,6 +2,7 @@ declare global {
   interface Date {
     addHours(h: number): Date;
     ceilToHalfHour(): Date;
+    floorToHalfHour(): Date;
     formatHoursMinutes(): string;
   }
 }
@@ -13,6 +14,11 @@ Date.prototype.addHours = function(hours) {
 
 Date.prototype.ceilToHalfHour = function() {
   this.setMinutes(this.getMinutes() <= 30 ? 30 : 60, 0, 0)
+  return this;
+}
+
+Date.prototype.floorToHalfHour = function() {
+  this.setMinutes(this.getMinutes() <= 30 ? 0 : 30, 0, 0)
   return this;
 }
 

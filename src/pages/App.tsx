@@ -26,30 +26,23 @@ function App() {
   const [userBooking, setUserBooking] = useState<UserBooking | null>(null)
 
   const [hasInputtedTimes, setHasInputtedTimes] = useState(false)
+  const [username, setUsername] = useState("charlie")
 
   const onSelectionChange = (selection: boolean[]) =>
     setHasInputtedTimes(selection.some(s => s))
-
-  const usernameRef = useRef<GreetingHandle>(null)
-
+  
 
   const sendHasFutureBookingRequest = async () => {
-    const res = await fetch(`http://localhost:5000/api/user-has-future-booking?username=${getUsername()}`);
+    const res = await fetch(`http://localhost:5000/api/user-has-future-booking?username=${username}`);
     const json: HasFutureBookingResponse = await res.json();
     setHasBooking(json.result);
     return json.result;
   }
 
   const getUserFutureBookingRequest =  async () => {
-    fetch(`http://localhost:5000/api/get-user-booking/?username=${getUsername()}`).then(async (res) => {
+    fetch(`http://localhost:5000/api/get-user-booking/?username=${username}`).then(async (res) => {
       const req = await res.json();
-      const raw = req["booking"]
-      const dto = new UserBookingDTO(
-        raw.username,
-        raw.startTimeStr,
-        raw.duration
-      );
-      console.log(dto)
+      const dto = UserBookingDTO.fromJson(req["booking"])
 
       setUserBooking(dto.toUserBooking());
     }).catch((error) => {
@@ -58,17 +51,28 @@ function App() {
 
   }
 
-  const getUsername = () => usernameRef.current ? usernameRef.current.getUsername() : ""
-
   useEffect(() => {
     sendHasFutureBookingRequest()
       .then((hasBooking: boolean) => {
         if (hasBooking) getUserFutureBookingRequest()
       })
-  }, [usernameRef])
+  }, [username])
 
-  const confirmBooking = () => {
-    // TODO: implement
+  const confirmBooking = (booking: UserBooking) => {
+    fetch("http://localhost:5000/api/save-booking", {
+      method: "POST",
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(booking.toDto())
+    }).then(async res => {
+      if (!res.ok) {
+        const json = await res.json()
+        alert(`There was an issue with your booking!\nError code ${res.status}: ${res.statusText}\nError: ${json.error}`)
+        return
+      }
+      else {
+        setUserBooking(booking)
+      }
+    })
   }
 
   const makeBooking = () => {
@@ -80,13 +84,21 @@ function App() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         times: timelineRef.current.getAvailableChunks(),
-        username: getUsername(),
+        username: username,
         duration: 1.5
       })
     }).then(async res => {
-      const json: UserBooking = await res.json()
-      const ok = confirm(`Booking at ${json.startDatetime.formatHoursMinutes()}`)
-      if (ok) confirmBooking()
+      if (!res.ok) {
+        alert(`There was an issue with your booking!\nError code ${res.status}: ${res.statusText}`)
+        return
+      }
+
+      const req = await res.json();
+      const dto = UserBookingDTO.fromJson(req["booking"])
+
+      const potentialBooking: UserBooking = dto.toUserBooking()
+      const ok = confirm(`Booking at ${potentialBooking.startDatetime.formatHoursMinutes()}`)
+      if (ok) confirmBooking(potentialBooking)
     }).catch((reason) => {
       alert(`There was an issue with your booking:\n${reason}`)
     })
@@ -95,7 +107,7 @@ function App() {
   return (
     <>
       <TitleBar />
-      <Greeting ref={usernameRef}/>
+      <Greeting callback={setUsername}/>
 
       {hasBooking && <BookingDisplay userBooking={userBooking}/>}
 

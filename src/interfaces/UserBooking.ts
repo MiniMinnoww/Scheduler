@@ -1,7 +1,17 @@
-export interface UserBooking {
-  username: string
-  startDatetime: Date
-  duration: number
+export class UserBooking {
+  public username: string
+  public startDatetime: Date
+  public duration: number
+
+  constructor(username: string, startDatetime: Date, duration: number) {
+    this.username = username
+    this.startDatetime = startDatetime
+    this.duration = duration
+  }
+
+  toDto(): UserBookingDTO {
+    return new UserBookingDTO(this.username, this.startDatetime.toISOString(), this.duration)
+  }
 }
 
 export class UserBookingDTO {
@@ -16,12 +26,10 @@ export class UserBookingDTO {
   }
 
   toUserBooking(): UserBooking {
-    console.log(this.startTimeStr)
-    console.log(new Date(this.startTimeStr))
-    return {
-      username: this.username,
-      startDatetime: new Date(this.startTimeStr),
-      duration: this.duration
-    }
+    return new UserBooking(this.username, new Date(this.startTimeStr), this.duration)
+  }
+
+  static fromJson(json: UserBookingDTO): UserBookingDTO {
+    return new UserBookingDTO(json.username, json.startTimeStr, json.duration)
   }
 }
