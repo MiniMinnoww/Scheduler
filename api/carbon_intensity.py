@@ -2,7 +2,6 @@ import requests
 from datetime import datetime, timedelta, timezone
 from dto.intensity_window import IntensityWindow
 from db import db
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 class CarbonIntensity:
     """
@@ -66,8 +65,9 @@ class CarbonIntensity:
     def update_db_missing_future_forecasts(self) -> None:
         """
         Fetch and store any missing half-hour forecasts between now and 2 days' time.
-        """
+        """ 
         existing_forecasts: list[IntensityWindow] = db.get_future_forecasts()
+        # Normalise times to UTC and strip seconds/micros in case
         existing_times = {
             w.time.astimezone(timezone.utc).replace(second=0, microsecond=0)
             for w in existing_forecasts
@@ -82,42 +82,28 @@ class CarbonIntensity:
         else:
             start = now.replace(minute=30, second=0, microsecond=0)
 
-        missing_slots: list[datetime] = []
+        # Walk every half-hour in this window, check which are missing
+        new_windows: list[IntensityWindow] = []
+        # print('already got:', existing_times)
         current = start
+        
         while current <= end:
             if current not in existing_times:
-                missing_slots.append(current)
-            current += timedelta(minutes=30)
+                # Which settlement period (1–48) for this datetime?
+                settlement = CarbonIntensity.half_hour_index(current)
 
-        if not missing_slots:
-            return
+                # Fetch from API for that date/period
+                data = self.get_data_for_half_hour(current, settlement)
 
-        new_windows: list[IntensityWindow] = []
-
-        with ThreadPoolExecutor(max_workers=8) as executor:
-            future_to_dt = {
-                executor.submit(
-                    self.get_data_for_half_hour,
-                    dt,
-                    CarbonIntensity.half_hour_index(dt)
-                ): dt
-                for dt in missing_slots
-            }
-
-            for future in as_completed(future_to_dt):
-                dt = future_to_dt[future]
-                try:
-                    data = future.result()
-                except Exception as e:
-                    print(f"Error fetching data for {dt}: {e}")
-                    continue
-
+                # Convert from API dict to DTO objects
                 if data:
                     window = IntensityWindow.from_dict(data)
                     new_windows.append(window)
+                # print('just added:', window)
 
-        if new_windows:
-            db.add_forecasts(new_windows)
+            current += timedelta(minutes=30)
+
+        # Add missing forecasts to the db
         if new_windows:
             db.add_forecasts(new_windows)
 
