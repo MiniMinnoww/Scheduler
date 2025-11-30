@@ -54,21 +54,28 @@ function App() {
 
   }
 
-  useEffect(() => {
-    sendHasFutureBookingRequest()
-      .then((hasBooking: boolean) => {
-        if (hasBooking) getUserFutureBookingRequest()
-        else setUserBooking(null)
-      })
-
+  const fetchPoints = () => {
     fetch(`http://localhost:5000/api/get-user-details?username=${username}`).then(async res => {
       if (res.ok) {
         const json: UserDetailsDTO = await res.json()
         const userDetails = UserDetails.fromJson(json)
 
+        console.log("AHHH")
         setPoints(userDetails.points)
       }
     })
+  }
+
+  useEffect(() => {
+    sendHasFutureBookingRequest()
+      .then((hasBooking: boolean) => {
+        setHasBooking(hasBooking)
+        if (hasBooking) getUserFutureBookingRequest()
+        else setUserBooking(null)
+      })
+
+    fetchPoints()
+
   }, [username])
 
   const confirmBooking = (booking: UserBooking) => {
@@ -84,6 +91,7 @@ function App() {
       }
       else {
         setUserBooking(booking)
+        fetchPoints()
       }
     })
   }

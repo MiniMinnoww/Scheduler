@@ -55,14 +55,14 @@ const Timeline = forwardRef<TimelineHandle, TimelineProps>(({readonly, onSelecti
       const newDate = new Date().ceilToHalfHour().addHours(TIME_STEP * i)
 
       if (currentBooking) {
-        const bookingDate = new Date(currentBooking.startDatetime).floorToHalfHour()
-        const value =
-          newDate >= bookingDate &&
-          newDate < bookingDate.ceilToHalfHour().addHours(currentBooking.duration);
+        const bookingStart = new Date(currentBooking.startDatetime);
+        const bookingEnd = new Date(bookingStart.getTime() + currentBooking.duration * 60 * 60 * 1000); // duration in hours
 
-        pendingSelections.push({ index: i, value: value });
+        const value = newDate >= bookingStart && newDate < bookingEnd;
+        pendingSelections.push({ index: i, value });
+      } else {
+        pendingSelections.push({ index: i, value: false });
       }
-      else pendingSelections.push({ index: i, value: false })
 
       allHours.push(newDate)
     }
