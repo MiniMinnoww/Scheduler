@@ -110,7 +110,7 @@ function App() {
       })
     }).then(async res => {
       if (!res.ok) {
-        alert(`There was an issue with your booking!\nError code ${res.status}: ${res.statusText}`)
+        alert(`There were no free bookings at this time!`)
         return
       }
 
