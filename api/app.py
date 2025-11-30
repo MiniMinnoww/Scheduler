@@ -3,8 +3,8 @@ import time
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
-from api.scheduling_algorithm import schedule
-from api.utlis import validate_username
+from scheduling_algorithm import schedule
+from utlis import validate_username
 from domain.wash_booking import WashBooking
 from db.db import get_all_future_bookings, get_usernames, create_booking, has_future_booking, get_booking_from_username
 from datetime import datetime
@@ -26,7 +26,7 @@ def get_booking_for_user():
     if error_dict := validate_username(username):
         return jsonify(error_dict), 400
     try:
-        return get_booking_from_username(username).to_json()
+        return {"booking":get_booking_from_username(username).to_json()}
     except ValueError as e:
         return jsonify({"error": e}), 400
 
@@ -49,7 +49,7 @@ def save_booking():
 
     create_booking(booking)
 
-@app.route("/api/send_booking_request", methods=["POST"])
+@app.route("/api/send-booking-request", methods=["POST"])
 def process_booking():
     booking_request = json.loads(request.get_json())
     username = booking_request.get("username", "")
@@ -57,11 +57,14 @@ def process_booking():
         return jsonify(error_dict), 400
 
     if (times:=booking_request.get("times", "")) == "":
-        return jsonify({"error": "No times were submitted"})
+        return jsonify({"error": "No times were submitted"}), 400
 
     booking_request["times"] = [datetime.fromisoformat(timeslot) for timeslot in times]
+    booking = schedule.get_best_booking(booking_request).to_json()
+    if booking is None:
+        return {"booking": None}
 
-    return schedule.get_best_booking(booking_request).to_json()
+    return {"booking": booking.to_json()}
 
 
 @app.route("/api/user-has-future-booking")
