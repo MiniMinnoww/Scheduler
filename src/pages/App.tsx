@@ -10,6 +10,7 @@ import Greeting, {type GreetingHandle} from "../components/Greeting.tsx";
 import BookingDisplay from "../components/BookingDisplay.tsx";
 import MakeBookingButton from "../components/MakeBookingButton.tsx";
 import {UserBookingDTO, type UserBooking} from "../interfaces/UserBooking.ts";
+import {UserDetails, type UserDetailsDTO} from "../interfaces/UserDetails.ts";
 
 
 interface HasFutureBookingResponse {
@@ -27,6 +28,8 @@ function App() {
 
   const [hasInputtedTimes, setHasInputtedTimes] = useState(false)
   const [username, setUsername] = useState("charlie")
+
+  const [points, setPoints] = useState(0)
 
   const onSelectionChange = (selection: boolean[]) =>
     setHasInputtedTimes(selection.some(s => s))
@@ -57,7 +60,16 @@ function App() {
         if (hasBooking) getUserFutureBookingRequest()
         else setUserBooking(null)
       })
-  }, [username, userBooking])
+
+    fetch(`http://localhost:5000/api/get-user-details?username=${username}`).then(async res => {
+      if (res.ok) {
+        const json: UserDetailsDTO = await res.json()
+        const userDetails = UserDetails.fromJson(json)
+
+        setPoints(userDetails.points)
+      }
+    })
+  }, [username])
 
   const confirmBooking = (booking: UserBooking) => {
     fetch("http://localhost:5000/api/save-booking", {
@@ -108,7 +120,7 @@ function App() {
   return (
     <>
       <TitleBar />
-      <Greeting callback={setUsername}/>
+      <Greeting callback={setUsername} points={points}/>
 
       {hasBooking && <BookingDisplay userBooking={userBooking}/>}
 
